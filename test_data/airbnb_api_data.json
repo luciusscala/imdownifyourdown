@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Chalet",
+    "location": "Chamonix, France",
+    "number_of_guests": 9,
+    "total_cost": 9393.00,
+    "number_of_nights": 7,
+    "total_cost_per_person": 1043.00,
+    "cost_per_night_per_person": 149.00,
+    "check_in": "2025-10-15T15:00:00Z",
+    "check_out": "2025-10-25T11:00:00Z",
+    "home_link": "https://www.airbnb.com/rooms/47219633?adults=9&check_in=2025-12-18&check_out=2025-12-25&search_mode=regular_search&source_impression_id=p3_1752367537_P39Nc-UsHt5NQWYD&previous_page_section_name=1000&federated_search_id=247de4ab-05d6-433d-b536-cf0718c29ed0"
+  }
+] 

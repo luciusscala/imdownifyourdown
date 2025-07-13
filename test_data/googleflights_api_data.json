@@ -1,0 +1,33 @@
+[
+  {
+    "number_of_passengers": 9,
+    "total_cost": 8029.00,
+    "total_cost_per_person": 892,
+    "trip_id": "xyz999",
+    "origin": "SAN",
+    "destination": "GVA",
+    "total_duration_minutes": 1000,
+    "segments": [
+      {
+        "flight_number": "LH 467",
+        "airline": "Lufthansa",
+        "departure_airport": "SAN",
+        "arrival_airport": "MUC",
+        "departure_time_utc": "2025-10-14T22:00:00Z",
+        "arrival_time_utc": "2025-10-15T06:00:00Z",
+        "duration_minutes": 660,
+        "layover_minutes": 200
+      },
+      {
+        "flight_number": "LH 2388",
+        "airline": "Lufthansa",
+        "departure_airport": "MUC",
+        "arrival_airport": "GVA",
+        "departure_time_utc": "2025-10-15T22:00:00Z",
+        "arrival_time_utc": "2025-10-15T08:00:00Z",
+        "duration_minutes": 140,
+        "layover_minutes": 0
+      }
+    ]
+  }
+]
