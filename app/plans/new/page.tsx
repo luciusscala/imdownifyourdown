@@ -13,10 +13,15 @@ export default function NewPlanPage() {
   async function handleSubmit(data: any) {
     setSubmitting(true);
     try {
+      const payload = {
+        ...data,
+        departure_date: data.departure_date instanceof Date ? data.departure_date.toISOString() : data.departure_date,
+        return_date: data.return_date instanceof Date ? data.return_date.toISOString() : data.return_date,
+      };
       const res = await fetch("/api/plans/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to create plan");
       const { id } = await res.json();

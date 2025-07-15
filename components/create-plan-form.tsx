@@ -22,8 +22,8 @@ import {
 
 const planSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  departure_date: z.date({ required_error: "Departure date is required" }),
-  return_date: z.date({ required_error: "Return date is required" }),
+  departure_date: z.date().refine(Boolean, { message: "Departure date is required" }),
+  return_date: z.date().refine(Boolean, { message: "Return date is required" }),
   origin: z.string().min(1, "Origin is required"),
   destination: z.string().min(1, "Destination is required"),
   flight_link: z.string().url("Must be a valid URL").optional().or(z.literal("")),
