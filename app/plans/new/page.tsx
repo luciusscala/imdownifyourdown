@@ -1,17 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { CreatePlanForm } from "@/components/create-plan-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function NewPlanPage() {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handleSubmit(data: any) {
-    setSubmitting(true);
+  async function handleSubmit(data: {
+    title: string;
+    departure_date: Date;
+    return_date: Date;
+    origin: string;
+    destination: string;
+    flight_link?: string;
+    lodge_link?: string;
+  }) {
     try {
       const payload = {
         ...data,
@@ -24,13 +28,12 @@ export default function NewPlanPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to create plan");
-      const { id } = await res.json();
+      const { planId } = await res.json();
       toast.success("Plan created!");
-      router.push(`/plans/${id}`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create plan");
-    } finally {
-      setSubmitting(false);
+      router.push(`/plans/${planId}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to create plan";
+      toast.error(message);
     }
   }
 

@@ -14,8 +14,9 @@ export default function TestPage() {
       const res = await fetch("/api/test", { method: "POST" });
       const data = await res.json();
       setResult(JSON.stringify(data, null, 2));
-    } catch (err: any) {
-      setResult(err.message || "Error");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error";
+      setResult(message);
     } finally {
       setLoading(false);
     }

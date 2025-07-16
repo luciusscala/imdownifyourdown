@@ -48,7 +48,13 @@ export default function PlansPage() {
           .or(`host_id.eq.${userId}`);
         if (plansError) throw plansError;
         setPlans(
-          (data || []).map((plan: any) => ({
+          (data || []).map((plan: {
+            id: string;
+            title: string;
+            destination: string;
+            departure_date: string;
+            return_date: string;
+          }) => ({
             id: plan.id,
             title: plan.title,
             destination: plan.destination,
@@ -56,8 +62,9 @@ export default function PlansPage() {
             return_date: plan.return_date,
           }))
         );
-      } catch (err: any) {
-        setError(err.message || "Failed to load plans");
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Failed to load plans";
+        setError(message);
       } finally {
         setLoading(false);
       }
