@@ -29,7 +29,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "!bg-white group/calendar p-3 [--cell-size:2rem]",
         String.raw`rtl:**:[.rdp-button_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button_previous>svg]:rotate-180`,
         className
@@ -53,12 +53,12 @@ function Calendar({
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          "w-[var(--cell-size)] h-[var(--cell-size)] aria-disabled:opacity-50 p-0 select-none",
+          "w-[var(--cell-size)] h-[var(--cell-size)] aria-disabled:opacity-100 p-0 select-none",
           defaultClassNames.button_previous
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          "w-[var(--cell-size)] h-[var(--cell-size)] aria-disabled:opacity-50 p-0 select-none",
+          "w-[var(--cell-size)] h-[var(--cell-size)] aria-disabled:opacity-100 p-0 select-none",
           defaultClassNames.button_next
         ),
         month_caption: cn(
@@ -74,7 +74,7 @@ function Calendar({
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
-          "absolute bg-popover inset-0 opacity-0",
+          "absolute bg-popover inset-0 opacity-100",
           defaultClassNames.dropdown
         ),
         caption_label: cn(
@@ -118,7 +118,7 @@ function Calendar({
           defaultClassNames.outside
         ),
         disabled: cn(
-          "text-muted-foreground opacity-50",
+          "text-muted-foreground opacity-100",
           defaultClassNames.disabled
         ),
         hidden: cn("invisible", defaultClassNames.hidden),
