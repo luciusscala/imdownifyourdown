@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: planId } = await params;
+    const { id: tripId } = await params;
 
     // Get Supabase user
     const cookieStore = await cookies();
@@ -42,38 +42,38 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch plan details
-    const { data: plan, error: planError } = await supabase
+    // Fetch trip details
+    const { data: trip, error: tripError } = await supabase
       .from("plans")
       .select("*")
-      .eq("id", planId)
+      .eq("id", tripId)
       .single();
 
-    if (planError || !plan) {
-      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    if (tripError || !trip) {
+      return NextResponse.json({ error: "Trip not found" }, { status: 404 });
     }
 
-    // Fetch flights for this plan
+    // Fetch flights for this trip
     const { data: flights, error: flightsError } = await supabase
       .from("flights")
       .select("*")
-      .eq("plan_id", planId);
+      .eq("plan_id", tripId);
 
     if (flightsError) {
       return NextResponse.json({ error: "Failed to fetch flights" }, { status: 500 });
     }
 
-    // Fetch lodging for this plan
+    // Fetch lodging for this trip
     const { data: lodging, error: lodgingError } = await supabase
       .from("lodging")
       .select("*")
-      .eq("plan_id", planId);
+      .eq("plan_id", tripId);
 
     if (lodgingError) {
       return NextResponse.json({ error: "Failed to fetch lodging" }, { status: 500 });
     }
 
-    // Fetch participants for this plan
+    // Fetch participants for this trip
     const { data: participants, error: participantsError } = await supabase
       .from("participants")
       .select(`
@@ -84,14 +84,14 @@ export async function GET(
           full_name
         )
       `)
-      .eq("plan_id", planId);
+      .eq("plan_id", tripId);
 
     if (participantsError) {
       return NextResponse.json({ error: "Failed to fetch participants" }, { status: 500 });
     }
 
     return NextResponse.json({
-      plan,
+      trip,
       flights: flights || [],
       lodging: lodging || [],
       participants: participants || [],
