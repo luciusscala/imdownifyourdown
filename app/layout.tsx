@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { Jomolhari } from "next/font/google";
 import "./globals.css";
+
+const jomolhari = Jomolhari({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "My App",
@@ -13,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`antialiased ${jomolhari.className}`}>
         {children}
       </body>
     </html>
