@@ -1,158 +1,169 @@
-"use client";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { TripHeader } from "@/components/trip/trip-header";
+import { FlightTimeline } from "@/components/trip/flight-timeline";
+import { LodgingDetails } from "@/components/trip/lodging-details";
+import { CostBreakdown } from "@/components/trip/cost-breakdown";
+import { ParticipantList } from "@/components/trip/participant-list";
+import { TripResponse } from "@/lib/types/trip";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Calendar, DollarSign, Users } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { createClient } from "@/lib/supabase/client";
-
-interface Trip {
-  id: string;
-  title: string;
-  host_id: string;
-  created_at: string;
+interface TripPageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default function TripDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const tripId = params.id as string;
-  const [trip, setTrip] = useState<Trip | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+async function getTripData(tripId: string): Promise<TripResponse> {
+  const supabase = await createClient();
 
-  useEffect(() => {
-    const fetchTrip = async () => {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('trips')
-          .select('*')
-          .eq('id', tripId)
-          .single();
+  // Fetch trip data
+  const { data: trip, error: tripError } = await supabase
+    .from("trips")
+    .select("*")
+    .eq("id", tripId)
+    .single();
 
-        if (error) throw error;
-        setTrip(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load trip");
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (tripError || !trip) {
+    throw new Error('Trip not found');
+  }
 
-    if (tripId) {
-      fetchTrip();
+  // Fetch flights with segments
+  const { data: flightsData } = await supabase
+    .from("flights")
+    .select(`
+      *,
+      flight_segments (*)
+    `)
+    .eq("trip_id", tripId)
+    .order("created_at");
+
+  const flights = flightsData || [];
+
+  // Fetch lodging
+  const { data: lodgingData } = await supabase
+    .from("lodging")
+    .select("*")
+    .eq("trip_id", tripId)
+    .order("check_in");
+
+  const lodging = lodgingData || [];
+
+  // Fetch participants with user info
+  const { data: participantsData } = await supabase
+    .from("trip_participants")
+    .select(`
+      *,
+      user:user_id (id, email)
+    `)
+    .eq("trip_id", tripId)
+    .order("created_at");
+
+  const participants = participantsData || [];
+
+  // Calculate cost breakdown
+  const flightsCost = flights.reduce((sum, flight) => {
+    if (flight.total_price === null || flight.total_price === undefined) {
+      return sum;
     }
-  }, [tripId]);
+    const price = typeof flight.total_price === 'number' ? flight.total_price : 
+                 typeof flight.total_price === 'string' ? parseFloat(flight.total_price) || 0 : 0;
+    return sum + price;
+  }, 0);
+  
+  const lodgingCost = lodging.reduce((sum, lodge) => {
+    if (lodge.total_cost === null || lodge.total_cost === undefined) {
+      return sum;
+    }
+    const price = typeof lodge.total_cost === 'number' ? lodge.total_cost : 
+                 typeof lodge.total_cost === 'string' ? parseFloat(lodge.total_cost) || 0 : 0;
+    return sum + price;
+  }, 0);
 
-  if (loading) {
+  return {
+    trip,
+    flights,
+    lodging,
+    participants,
+    costBreakdown: {
+      flights: flightsCost,
+      lodging: lodgingCost,
+      total: flightsCost + lodgingCost,
+    },
+  };
+}
+
+export default async function TripPage({ params }: TripPageProps) {
+  const { id: tripId } = await params;
+
+  try {
+    const tripData = await getTripData(tripId);
+    const { trip, flights, lodging, participants, costBreakdown } = tripData;
+
+    // Get host email for display
+    const hostParticipant = participants.find(p => p.user_id === trip.host_id);
+    const hostEmail = hostParticipant?.user.email;
+
     return (
-      <main className="max-w-4xl mx-auto py-8 px-4">
-        <div className="text-center">
-          <p>Loading trip...</p>
-        </div>
-      </main>
-    );
-  }
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <TripHeader trip={trip} hostEmail={hostEmail} />
+          </div>
 
-  if (error || !trip) {
-    return (
-      <main className="max-w-4xl mx-auto py-8 px-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Trip Not Found</h1>
-          <p className="text-muted-foreground mb-6">The trip you&apos;re looking for doesn&apos;t exist.</p>
-          <Button onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        </div>
-      </main>
-    );
-  }
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Flight Timeline */}
+              <FlightTimeline flights={flights} />
 
-  return (
-    <main className="max-w-6xl mx-auto py-8 px-4">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">{trip.title}</h1>
-          <p className="text-muted-foreground">
-            Created {format(parseISO(trip.created_at), "PPP")}
-          </p>
-        </div>
-      </div>
+              {/* Lodging Details */}
+              <LodgingDetails lodging={lodging} />
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Itinerary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <p>Trip created - add flights and lodging to see your itinerary</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Right Column - Sidebar */}
+            <div className="space-y-8">
+              {/* Cost Breakdown */}
+              <CostBreakdown
+                flights={costBreakdown.flights}
+                lodging={costBreakdown.lodging}
+                total={costBreakdown.total}
+              />
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Cost Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Cost Breakdown
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span>Flights</span>
-                <span>USD 0.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Lodging</span>
-                <span>USD 0.00</span>
-              </div>
-              <div className="border-t pt-2">
-                <div className="flex justify-between font-semibold">
-                  <span>Total</span>
-                  <span>USD 0.00</span>
+              {/* Participants */}
+              <ParticipantList participants={participants} trip={trip} />
+            </div>
+          </div>
+
+          {/* Empty State - when no data */}
+          {flights.length === 0 && lodging.length === 0 && (
+            <div className="mt-16 text-center">
+              <div className="max-w-md mx-auto">
+                <div className="bg-white rounded-lg shadow-sm border p-8">
+                  <div className="text-gray-400 mb-4">
+                    <svg className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Trip Created Successfully!
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Your trip is ready. Add flight and lodging links to see your complete itinerary.
+                  </p>
+                  <div className="text-sm text-gray-500">
+                    <p>• Flight links will be parsed for routes and costs</p>
+                    <p>• Lodging links will show accommodation details</p>
+                    <p>• All costs will be automatically calculated</p>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Participants */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Participants (0)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">No participants yet</p>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
       </div>
-    </main>
-  );
-}
+    );
+  } catch (error) {
+    console.error('Error loading trip:', error);
+    notFound();
+  }
+} 
