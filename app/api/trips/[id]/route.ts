@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id: tripId } = await params;
-    
+
     // Get Supabase client
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -122,4 +122,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}
