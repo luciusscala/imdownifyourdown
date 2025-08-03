@@ -9,8 +9,8 @@ const jomolhari = Jomolhari({
 });
 
 export const metadata: Metadata = {
-  title: "My App",
-  description: "A simple Next.js application",
+  title: "travel.",
+  description: "Travel with friends",
 };
 
 export default function RootLayout({
