@@ -9,7 +9,7 @@ const jomolhari = Jomolhari({
 });
 
 export const metadata: Metadata = {
-  title: "travel.",
+  title: "travel",
   description: "Travel with friends",
 };
 
