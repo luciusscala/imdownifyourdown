@@ -29,10 +29,10 @@ export default function WaitlistPage() {
         <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-medium text-[#283618]">
-              You're on the list!
+              You&apos;re on the list!
             </CardTitle>
             <CardDescription className="text-base text-[#606c38]">
-              Thanks for joining our waitlist. We'll notify you when we launch.
+              Thanks for joining our waitlist. We&apos;ll notify you when we launch.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">

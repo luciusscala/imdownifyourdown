@@ -7,7 +7,7 @@ export default function Home() {
       <div className="text-center max-w-2xl mx-auto">
         <div className="mb-12">
           <h1 className="text-5xl font-medium mb-6 leading-tight text-[#283618]">
-            "Wherever you go, go with all your heart [and friends]"
+            &ldquo;Wherever you go, go with all your heart [and friends]&rdquo;
           </h1>
           <p className="text-xl text-[#000000] font-light tracking-wide">
             Confucius
