@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased ${jomolhari.className}`}>
+      <body className={`antialiased ${jomolhari.className} text-[#283618] min-h-screen bg-[#fefae0]`}>
         {children}
       </body>
     </html>
