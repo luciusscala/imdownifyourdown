@@ -6,8 +6,8 @@ import { z } from "zod";
 // Request validation schema
 const createTripSchema = z.object({
   title: z.string().min(1, "Trip title is required").max(100, "Title must be less than 100 characters"),
-  flightLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  lodgingLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  flightLinks: z.array(z.string().url("Must be a valid URL")).optional(),
+  lodgingLinks: z.array(z.string().url("Must be a valid URL")).optional(),
 });
 
 // Types
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
     
     console.log("Creating trip with data:", {
       title: validatedData.title,
-      hasFlightLink: !!validatedData.flightLink,
-      hasLodgingLink: !!validatedData.lodgingLink,
+      flightLinksCount: validatedData.flightLinks?.length || 0,
+      lodgingLinksCount: validatedData.lodgingLinks?.length || 0,
     });
 
     // Get Supabase client
@@ -110,19 +110,19 @@ export async function POST(req: NextRequest) {
     if (!fastApiBaseUrl) {
       console.warn("FASTAPI_SERVER_URL not configured, skipping link parsing");
     } else {
-      // Parse flight link if provided
-      if (validatedData.flightLink) {
-        console.log("Sending flight link to FastAPI for parsing...");
+      // Parse flight links if provided
+      if (validatedData.flightLinks && validatedData.flightLinks.length > 0) {
+        console.log(`Sending ${validatedData.flightLinks.length} flight links to FastAPI for parsing...`);
         fastApiPromises.push(
-          parseFlightLink(fastApiBaseUrl, trip.id, validatedData.flightLink)
+          parseFlightLinks(fastApiBaseUrl, trip.id, validatedData.flightLinks)
         );
       }
 
-      // Parse lodging link if provided
-      if (validatedData.lodgingLink) {
-        console.log("Sending lodging link to FastAPI for parsing...");
+      // Parse lodging links if provided
+      if (validatedData.lodgingLinks && validatedData.lodgingLinks.length > 0) {
+        console.log(`Sending ${validatedData.lodgingLinks.length} lodging links to FastAPI for parsing...`);
         fastApiPromises.push(
-          parseLodgingLink(fastApiBaseUrl, trip.id, validatedData.lodgingLink)
+          parseLodgingLinks(fastApiBaseUrl, trip.id, validatedData.lodgingLinks)
         );
       }
     }
@@ -168,18 +168,18 @@ export async function POST(req: NextRequest) {
 }
 
 // Helper function to parse flight links via FastAPI
-async function parseFlightLink(
+async function parseFlightLinks(
   baseUrl: string,
   tripId: string,
-  flightLink: string
+  flightLinks: string[]
 ): Promise<FastAPIResponse> {
   try {
-    const response = await fetch(`${baseUrl}/api/parse_and_insert_flight`, {
+    const response = await fetch(`${baseUrl}/api/parse_and_insert_flights`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         trip_id: tripId,
-        link: flightLink,
+        links: flightLinks,
       }),
     });
 
@@ -199,18 +199,18 @@ async function parseFlightLink(
 }
 
 // Helper function to parse lodging links via FastAPI
-async function parseLodgingLink(
+async function parseLodgingLinks(
   baseUrl: string,
   tripId: string,
-  lodgingLink: string
+  lodgingLinks: string[]
 ): Promise<FastAPIResponse> {
   try {
-    const response = await fetch(`${baseUrl}/api/parse_and_insert_lodge`, {
+    const response = await fetch(`${baseUrl}/api/parse_and_insert_lodges`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         trip_id: tripId,
-        link: lodgingLink,
+        links: lodgingLinks,
       }),
     });
 

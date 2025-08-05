@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, Plane, Home, ArrowLeft } from "lucide-react";
@@ -16,8 +17,8 @@ import { BubbleNav } from "@/components/bubble-nav";
 // Form validation schema
 const createTripSchema = z.object({
   title: z.string().min(1, "Trip title is required").max(100, "Title must be less than 100 characters"),
-  flightLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  lodgingLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  flightLinks: z.string().optional(),
+  lodgingLinks: z.string().optional(),
 });
 
 type CreateTripFormData = z.infer<typeof createTripSchema>;
@@ -39,8 +40,8 @@ export default function NewTripPage() {
     resolver: zodResolver(createTripSchema),
     defaultValues: {
       title: "",
-      flightLink: "",
-      lodgingLink: "",
+      flightLinks: "",
+      lodgingLinks: "",
     },
   });
 
@@ -48,10 +49,23 @@ export default function NewTripPage() {
     setIsSubmitting(true);
     
     try {
+      // Parse links from textarea (split by newlines and filter empty lines)
+      const flightLinks = data.flightLinks
+        ? data.flightLinks.split('\n').filter(link => link.trim() !== '')
+        : [];
+      
+      const lodgingLinks = data.lodgingLinks
+        ? data.lodgingLinks.split('\n').filter(link => link.trim() !== '')
+        : [];
+      
       const response = await fetch("/api/trips/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          title: data.title,
+          flightLinks,
+          lodgingLinks,
+        }),
       });
 
       if (!response.ok) {
@@ -114,21 +128,21 @@ export default function NewTripPage() {
                     )}
                   />
 
-                  {/* Flight Link */}
+                  {/* Flight Links */}
                   <FormField
                     control={form.control}
-                    name="flightLink"
+                    name="flightLinks"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[#606c38] font-medium flex items-center gap-2">
                           <Plane className="h-4 w-4" />
-                          Flight Link (Optional but recommended)
+                          Flight Links (Optional but recommended)
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="https://flights.example.com/booking/..."
+                          <Textarea
+                            placeholder="https://flights.com/booking/ - Add one link per line"
                             {...field}
-                            className="border-[#606c38]/20 focus:border-[#606c38] focus:ring-[#606c38]/20"
+                            className="border-[#606c38]/20 focus:border-[#606c38] focus:ring-[#606c38]/20 min-h-[100px] resize-none"
                           />
                         </FormControl>
                         <FormMessage />
@@ -136,21 +150,21 @@ export default function NewTripPage() {
                     )}
                   />
 
-                  {/* Lodging Link */}
+                  {/* Lodging Links */}
                   <FormField
                     control={form.control}
-                    name="lodgingLink"
+                    name="lodgingLinks"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[#606c38] font-medium flex items-center gap-2">
                           <Home className="h-4 w-4" />
-                          Lodging Link (Optional but recommended)
+                          Lodging Links (Optional but recommended)
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="https://airbnb.com/rooms/..."
+                          <Textarea
+                            placeholder="https://airbnb.com/rooms/ - Add one link per line"
                             {...field}
-                            className="border-[#606c38]/20 focus:border-[#606c38] focus:ring-[#606c38]/20"
+                            className="border-[#606c38]/20 focus:border-[#606c38] focus:ring-[#606c38]/20 min-h-[100px] resize-none"
                           />
                         </FormControl>
                         <FormMessage />
