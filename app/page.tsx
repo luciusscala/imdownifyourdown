@@ -1,4 +1,20 @@
 import { BubbleNav } from "@/components/bubble-nav";
+import { LogIn, UserPlus } from "lucide-react";
+
+const navItems = [
+  {
+    label: "Sign In",
+    href: "/auth/login",
+    icon: LogIn,
+    variant: "outline" as const,
+  },
+  {
+    label: "Sign Up",
+    href: "/auth/sign-up",
+    icon: UserPlus,
+    variant: "default" as const,
+  },
+];
 
 export default function Home() {
   return (
@@ -15,7 +31,7 @@ export default function Home() {
           </div>
         </div>
       </main>
-      <BubbleNav />
+      <BubbleNav items={navItems} />
     </>
   );
 }
