@@ -12,7 +12,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, Plane, Home, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { BubbleNav } from "@/components/bubble-nav";
 
 // Form validation schema
 const createTripSchema = z.object({
@@ -22,15 +21,6 @@ const createTripSchema = z.object({
 });
 
 type CreateTripFormData = z.infer<typeof createTripSchema>;
-
-const navItems = [
-  {
-    label: "Home",
-    href: "/home",
-    icon: Home,
-    variant: "ghost" as const,
-  },
-];
 
 export default function NewTripPage() {
   const router = useRouter();
@@ -193,7 +183,6 @@ export default function NewTripPage() {
           </Card>
         </div>
       </main>
-      <BubbleNav items={navItems} />
     </>
   );
 } 
