@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { NavButton } from "@/components/nav-button";
-import { LogIn, UserPlus, Home, LogOut } from "lucide-react";
 import Link from "next/link";
 
 export interface NavItem {

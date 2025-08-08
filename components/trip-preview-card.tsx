@@ -20,7 +20,6 @@ interface TripPreviewCardProps {
 
 export function TripPreviewCard({ trips }: TripPreviewCardProps) {
   const upcomingTrips = trips.filter(trip => trip.status === 'upcoming');
-  const activeTrips = trips.filter(trip => trip.status === 'active');
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg shadow-black/10">

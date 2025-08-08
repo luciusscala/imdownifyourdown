@@ -27,9 +27,26 @@ async function getUserTrips(): Promise<Trip[]> {
   
   // Get user session
   const { data: { user }, error: userError } = await supabase.auth.getUser();
+  console.log("User session:", { user: user?.id, error: userError });
+  
   if (userError || !user) {
+    console.log("No user found, returning empty array");
     return [];
   }
+
+  // First, let's check if there are any trip_participants at all
+  const { data: allParticipants, error: allParticipantsError } = await supabase
+    .from("trip_participants")
+    .select("*");
+  
+  console.log("All participants:", allParticipants, "Error:", allParticipantsError);
+
+  // Check if there are any trips at all
+  const { data: allTrips, error: allTripsError } = await supabase
+    .from("trips")
+    .select("*");
+  
+  console.log("All trips:", allTrips, "Error:", allTripsError);
 
   // Fetch trips where user is a participant
   const { data: participants, error: participantsError } = await supabase
@@ -44,26 +61,43 @@ async function getUserTrips(): Promise<Trip[]> {
     `)
     .eq("user_id", user.id);
 
+  console.log("Participants query result:", { participants, error: participantsError });
+
   if (participantsError || !participants) {
+    console.log("No participants found or error occurred");
     return [];
   }
 
-  // Transform the data to match our interface
-  const trips: Trip[] = participants.map((participant: any) => ({
-    id: participant.trips.id,
-    title: participant.trips.title,
-    location: "TBD", // This would come from trip details
-    startDate: "TBD", // This would come from trip details
-    endDate: "TBD", // This would come from trip details
-    participantCount: 1, // This would be calculated from participants
-    status: "upcoming" as const, // This would be determined by dates
-  }));
+  console.log("Raw participants data:", participants);
 
+  // Transform the data to match our interface
+  const trips: Trip[] = participants
+    .filter((participant) => {
+      console.log("Checking participant:", participant);
+      const tripData = participant.trips as unknown as { id: string; title: string; created_at: string };
+      return tripData && tripData.id;
+    })
+    .map((participant) => {
+      console.log("Mapping participant:", participant);
+      const tripData = participant.trips as unknown as { id: string; title: string; created_at: string };
+      return {
+        id: tripData.id,
+        title: tripData.title,
+        location: "TBD", // This would come from trip details
+        startDate: "TBD", // This would come from trip details
+        endDate: "TBD", // This would come from trip details
+        participantCount: 1, // This would be calculated from participants
+        status: "upcoming" as const, // This would be determined by dates
+      };
+    });
+
+  console.log("Final trips array:", trips);
   return trips;
 }
 
 export default async function Home() {
   const trips = await getUserTrips();
+  console.log("Home component received trips:", trips);
 
   return (
     <>
